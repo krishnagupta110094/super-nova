@@ -38,7 +38,7 @@ const registerUserValidations = [
     .withMessage("Last name must be between 3 and 20 characters long"),
   body("role")
     .optional()
-    .isIn("user", "seller")
+    .isIn(["user", "seller"])
     .withMessage("Role must be either user or seller"),
   respondWithValidationErrors,
 ];
