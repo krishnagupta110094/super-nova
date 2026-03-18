@@ -21,7 +21,13 @@ const mongoose = require("mongoose");
  */
 exports.createProduct = async (req, res) => {
   try {
-    const { title, description, priceAmount, priceCurrency } = req.body;
+    const {
+      title,
+      description,
+      priceAmount,
+      priceCurrency,
+      stock = 0,
+    } = req.body;
 
     if (!title || !description || !priceAmount || !priceCurrency) {
       return res.status(400).json({ message: "All fields are required" });
@@ -50,6 +56,7 @@ exports.createProduct = async (req, res) => {
       price,
       seller,
       images,
+      stock,
     });
 
     res.status(201).json({
@@ -160,7 +167,7 @@ exports.updateProduct = async (req, res) => {
   }
 
   try {
-    const allowedUpdates = ["title", "description", "price"];
+    const allowedUpdates = ["title", "description", "price","stock"];
     const body = req.body || {};
     const updates = Object.keys(body);
 
