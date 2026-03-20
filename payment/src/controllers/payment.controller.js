@@ -3,6 +3,7 @@ const PaymentModel = require("../models/payment.model");
 const crypto = require("crypto");
 
 const Razorpay = require("razorpay");
+const { publishToQueue } = require("../broker/broker");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -64,6 +65,12 @@ exports.verifyPayment = async (req, res) => {
 
     // 2️⃣ Compare signatures
     if (expectedSignature !== razorpaySignature) {
+      await publishToQueue("PAYMENT_NOTIFICATION.PAYMENT_FAILED", {
+        email: req.user?.email,
+        orderId: razorpayOrderId,
+        paymentId: razorpayPaymentId,
+        fullName: req.user?.fullName,
+      });
       return res.status(400).json({
         success: false,
         message: "Invalid payment signature",
@@ -71,7 +78,7 @@ exports.verifyPayment = async (req, res) => {
     }
 
     // 3️⃣ Update payment in DB
-    const payment = await PaymentModel.findOne({
+    let payment = await PaymentModel.findOne({
       razorpayOrderId: razorpayOrderId,
     });
 
@@ -88,6 +95,15 @@ exports.verifyPayment = async (req, res) => {
 
     await payment.save();
 
+    //publish Payment Verify Event to Notification service
+    await publishToQueue("PAYMENT_NOTIFICATION.PAYMENT_COMPLETED", {
+      email: req.user.email,
+      orderId: payment.order,
+      paymentId: payment.paymentId,
+      amount: payment.price.amount / 100,
+      currency: payment.price.currency,
+    });
+
     // 4️⃣ Send success response
     res.status(200).json({
       success: true,
@@ -96,6 +112,12 @@ exports.verifyPayment = async (req, res) => {
     });
   } catch (error) {
     console.error("Payment verification error:", error);
+    await publishToQueue("PAYMENT_NOTIFICATION.PAYMENT_FAILED", {
+      email: req.user?.email,
+      orderId: razorpayOrderId,
+      paymentId: razorpayPaymentId,
+      fullName: req.user?.fullName,
+    });
     res.status(500).json({
       success: false,
       message: "Error verifying payment",
