@@ -1,0 +1,18 @@
+{
+  "name": "notification",
+  "version": "1.0.0",
+  "description": "",
+  "main": "email.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/email.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "nodemailer": "^8.0.3"
+  }
+}
