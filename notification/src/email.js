@@ -26,11 +26,11 @@ const sendEmail = async (to, subject, text, html) => {
   }
 };
 
-sendEmail(
-  "krishnagupta79822@gmail.com",
-  "Test",
-  "Testing Text",
-  "<h1>Testing HTML</h1>",
-);
+// sendEmail(
+//   "krishnagupta79822@gmail.com",
+//   "Test",
+//   "Testing Text",
+//   "<h1>Testing HTML</h1>",
+// );
 
 module.exports = sendEmail;
