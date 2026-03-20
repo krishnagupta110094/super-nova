@@ -1,5 +1,6 @@
 const ProductModel = require("../models/product.model");
 const { uploadImageToImageKit } = require("../services/imagekit.service");
+const { v4: uuid } = require("uuid");
 
 const mongoose = require("mongoose");
 
@@ -46,9 +47,24 @@ exports.createProduct = async (req, res) => {
       currency: priceCurrency,
     };
 
-    const images = await Promise.all(
-      req.files.map((file) => uploadImageToImageKit(file)),
-    );
+    // const images = await Promise.all(
+    //   req.files.map((file) => uploadImageToImageKit(file)),
+    // );
+    // ✅ safe handling
+    if (req.files && req.files.length > 0) {
+      images = await Promise.all(
+        req.files.map((file) => uploadImageToImageKit(file)),
+      );
+    } else {
+      // ✅ default image
+      images = [
+        {
+          url: "https://picsum.photos/300",
+          thumbnail: "https://picsum.photos/300",
+          id: uuid(),
+        },
+      ];
+    }
 
     const product = await ProductModel.create({
       title,
@@ -167,7 +183,7 @@ exports.updateProduct = async (req, res) => {
   }
 
   try {
-    const allowedUpdates = ["title", "description", "price","stock"];
+    const allowedUpdates = ["title", "description", "price", "stock"];
     const body = req.body || {};
     const updates = Object.keys(body);
 
