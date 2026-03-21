@@ -60,13 +60,16 @@ exports.registerUser = async (req, res) => {
     });
 
     //publish user created event to RabbitMQ
-    publishToQueue("AUTH_NOTIFICATION.USER_CREATED", {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-    });
+    await Promise.all([
+      publishToQueue("AUTH_NOTIFICATION.USER_CREATED", {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      }),
+      publishToQueue("AUTH_SELLER_DASHBOARD.USER_CREATED", user),
+    ]);
 
     // generate token
     const token = jwt.sign(
