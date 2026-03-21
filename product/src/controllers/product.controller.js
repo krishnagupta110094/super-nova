@@ -3,6 +3,7 @@ const { uploadImageToImageKit } = require("../services/imagekit.service");
 const { v4: uuid } = require("uuid");
 
 const mongoose = require("mongoose");
+const { publishToQueue } = require("../broker/broker");
 
 /**
  * @function createProduct
@@ -73,6 +74,14 @@ exports.createProduct = async (req, res) => {
       seller,
       images,
       stock,
+    });
+
+    await publishToQueue("PRODUCT_SELLER_DASHBOARD.PRODUCT_CREATED", product);
+    await publishToQueue("PRODUCT_NOTIFICATION.PRODUCT_CREATED", {
+      email: req.user.email,
+      username: req.user.username,
+      productId: product._id,
+      sellerId: product.seller,
     });
 
     res.status(201).json({
