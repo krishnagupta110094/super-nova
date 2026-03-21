@@ -39,6 +39,14 @@ exports.createPayment = async (req, res) => {
         currency: razorpayOrder.currency,
       },
     });
+    await publishToQueue("PAYMENT_SELLER_DASHBOARD.PAYMENT_CREATED", payment);
+    await publishToQueue("PAYMENT_NOTIFICATION.PAYMENT_INITIATED", {
+      email: req.user?.email,
+      order: razorpayOrder.id,
+      username: req.user?.username,
+      amount: payment.price.amount / 100,
+      currency: payment.price.currency,
+    });
     return res.status(201).json({
       message: "Payment Initiated Successfully",
       payment,
@@ -103,6 +111,7 @@ exports.verifyPayment = async (req, res) => {
       amount: payment.price.amount / 100,
       currency: payment.price.currency,
     });
+    await publishToQueue("PAYMENT_SELLER_DASHBOARD.PAYMENT_UPDATED", payment);
 
     // 4️⃣ Send success response
     res.status(200).json({

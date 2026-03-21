@@ -5,7 +5,9 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Payment Service is Running..." });
+});
 app.use("/api/payments", paymentRoute);
 
 module.exports = app;
