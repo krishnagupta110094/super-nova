@@ -1,5 +1,6 @@
 const axios = require("axios");
 const OrderModel = require("../models/order.model");
+const { publishToQueue } = require("../broker/broker");
 
 exports.createOrder = async (req, res) => {
   try {
@@ -104,6 +105,8 @@ exports.createOrder = async (req, res) => {
       },
       shippingAddress: req.body.shippingAddress,
     });
+
+    await publishToQueue("ORDER_SELLER_DASHBOARD.ORDER_CREATED", order);
     // ============================
     // 🔥 1. STOCK DEDUCTION
     // ============================
